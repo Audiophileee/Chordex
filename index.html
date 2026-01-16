@@ -1,0 +1,1295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta name="theme-color" content="#0f0f0f">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="manifest" href="manifest.json">
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Chordex</title>
+
+<style>
+  * { 
+    box-sizing: border-box; 
+    margin: 0;
+    padding: 0;
+  }
+
+  html, body {
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+  }
+
+  body {
+    background: radial-gradient(ellipse at top, #1a1a2e 0%, #0f0f0f 50%);
+    color: #e8e8e8;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    padding: 0;
+  }
+
+  .container {
+    width: 100%;
+    max-width: 400px;
+    height: 100svh; /* 🔥 fixes mobile browser chrome */
+    margin: 0 auto;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    padding: 12px;
+  }
+
+
+  .header {
+    text-align: center;
+    margin-bottom: 14px;
+    position: relative;
+  }
+
+  .title {
+    font-size: 26px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    background: linear-gradient(135deg, #fff 0%, #a8a8a8 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 12px;
+  }
+
+  .subtitle {
+    font-size: 10px;
+    color: #6b6b6b;
+    font-weight: 400;
+    letter-spacing: 1px;
+  }
+
+  .menu-button {
+    position: fixed;
+    top: calc(env(safe-area-inset-top) + 12px);
+    right: 12px;
+
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+
+    width: 44px;
+    height: 44px;
+    border-radius: 14px;
+
+    cursor: pointer;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 1000;
+  }
+
+
+  .menu-button:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.2);
+  }
+
+  .menu-button span {
+    width: 20px;
+    height: 2px;
+    background: #e8e8e8;
+    border-radius: 2px;
+  }
+
+  .menu-dropdown {
+    position: fixed;
+    right: 12px;
+    top: calc(env(safe-area-inset-top) + 64px);
+
+    background: rgba(20, 20, 20, 0.95);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 16px;
+
+    padding: 8px;
+    min-width: 200px;
+
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-10px);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+    z-index: 999;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+
+    max-height: 0;
+    overflow: hidden;
+  }
+
+
+  .menu-dropdown.active {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+    max-height: 500px;
+  }
+
+  .menu-item {
+    padding: 12px 16px;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.2s;
+    color: #e8e8e8;
+    font-size: 14px;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .menu-item:hover {
+    background: rgba(255, 255, 255, 0.08);
+  }
+
+  .menu-item svg {
+    width: 18px;
+    height: 18px;
+    opacity: 0.7;
+  }
+
+  .settings-dropdown {
+    position: absolute;
+    right: 0;
+    top: 120px;
+    background: rgba(20, 20, 20, 0.95);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 20px;
+    padding: 24px;
+    width: 100%;
+    max-width: 500px;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-10px);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 99;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+    max-height: 0;
+    overflow: hidden;
+  }
+
+  .settings-dropdown.active {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+    max-height: 600px;
+    overflow-y: auto;
+  }
+
+  .settings-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 24px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .settings-title {
+    font-size: 24px;
+    font-weight: 600;
+    color: #fff;
+  }
+
+  .close-settings {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .close-settings:hover {
+    background: rgba(255, 255, 255, 0.1);
+  }
+
+  .close-settings svg {
+    width: 20px;
+    height: 20px;
+    stroke: #e8e8e8;
+  }
+
+  .setting-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 0;
+    gap: 20px;
+  }
+
+  .setting-info {
+    flex: 1;
+  }
+
+  .setting-label {
+    font-size: 15px;
+    font-weight: 500;
+    color: #e8e8e8;
+    margin-bottom: 4px;
+  }
+
+  .setting-description {
+    font-size: 13px;
+    color: #888;
+  }
+
+  .setting-select {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #e8e8e8;
+    padding: 10px 16px;
+    border-radius: 12px;
+    font-size: 14px;
+    cursor: pointer;
+    outline: none;
+    transition: all 0.3s;
+    font-family: inherit;
+  }
+
+  .setting-select:hover {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.2);
+  }
+
+  .diagram-wrapper {
+    width: 100%;
+    max-width: 340px;
+
+    margin: 8px auto;
+    padding: 14px;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    background: radial-gradient(ellipse at top, #1a1a2e 0%, #0f0f0f 50%);
+    border-radius: 20px;
+  }
+
+
+  .fret-indicator-export {
+    font-size: 18px;
+    font-weight: 700;
+    color: #ffffff;
+    text-align: center;
+    margin-bottom: 24px;
+    padding: 10px 20px;
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 16px;
+    letter-spacing: 1px;
+    display: block;
+  }
+
+  /* Fretboard Styles */
+  .fretboard-container {
+    display: none;
+  }
+
+  .fretboard-container.active {
+    display: block;
+  }
+
+  .controls {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 40px;
+    padding: 12px 24px;
+    background: rgba(255, 255, 255, 0.03);
+    backdrop-filter: blur(10px);
+    border-radius: 50px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    width: fit-content;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .fret-nav {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+  }
+
+  .fret-nav button {
+    background: rgba(255, 255, 255, 0.05);
+    color: #e8e8e8;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    font-size: 20px;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .fret-nav button:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.2);
+    transform: scale(1.05);
+  }
+
+  .fret-label {
+    font-size: 15px;
+    font-weight: 500;
+    color: #b8b8b8;
+    min-width: 70px;
+    text-align: center;
+  }
+
+  .string-indicators {
+    display: flex;
+    justify-content: space-around;
+    margin-bottom: 28px;
+    width: 312px;
+  }
+
+  .string-indicator {
+    width: 100%;
+    max-width: 320px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+  }
+
+  .string-indicator:hover {
+    transform: translateY(-2px);
+  }
+
+  .string-indicator.open::before {
+    content: '';
+    width: 14px;
+    height: 14px;
+    background: transparent;
+    border: 2.5px solid #a8a8a8;
+    border-radius: 50%;
+    position: absolute;
+  }
+
+  .string-indicator.open:hover::before {
+    border-color: #e8e8e8;
+  }
+
+  .string-indicator.muted::before {
+    content: '';
+    width: 16px;
+    height: 2.5px;
+    background: #a8a8a8;
+    position: absolute;
+    transform: rotate(45deg);
+  }
+
+  .string-indicator.muted::after {
+    content: '';
+    width: 16px;
+    height: 2.5px;
+    background: #a8a8a8;
+    position: absolute;
+    transform: rotate(-45deg);
+  }
+
+  .fretboard {
+    width: 100%;
+    max-width: 320px;
+    aspect-ratio: 1 / 1.05;
+
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    grid-template-rows: repeat(6, 1fr);
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 20px;
+    overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+
+    margin: 0 auto;
+  }
+
+  .cell {
+    border-right: 1px solid rgba(255, 255, 255, 0.08);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    position: relative;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .cell:hover {
+    background: rgba(255, 255, 255, 0.05);
+  }
+
+  .cell.selected {
+    background: rgba(255, 255, 255, 0.1);
+  }
+
+  .finger {
+    width: 20px;
+    height: 20px;
+    background: linear-gradient(135deg, #fff 0%, #d0d0d0 100%);
+    border-radius: 50%;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    box-shadow: 0 4px 12px rgba(255, 255, 255, 0.3);
+  }
+
+  .bar {
+    position: absolute;
+    height: 16px;
+    background: linear-gradient(135deg, #fff 0%, #d0d0d0 100%);
+    border-radius: 20px;
+    box-shadow: 0 4px 12px rgba(255, 255, 255, 0.3);
+    cursor: pointer;
+  }
+
+  /* Keyboard Styles */
+  .keyboard-container {
+    display: none;
+  }
+
+  .keyboard-container.active {
+    display: block;
+  }
+
+  .keyboard {
+    width: 100%;
+    max-width: 360px;
+    height: 180px;
+
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 20px;
+    padding: 14px;
+
+    display: flex;
+    gap: 2px;
+  }
+
+
+  .white-key {
+    flex: 1;
+    height: 160px;
+    background: linear-gradient(to bottom, #f0f0f0, #e0e0e0);
+    border-radius: 0 0 8px 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
+    border: 1px solid #ccc;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    padding-bottom: 12px;
+  }
+
+  .white-key:hover {
+    background: linear-gradient(to bottom, #fff, #f0f0f0);
+  }
+
+  .black-key {
+    width: 30px;
+    height: 100px;
+    background: linear-gradient(to bottom, #2a2a2a, #1a1a1a);
+    border-radius: 0 0 6px 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+    position: absolute;
+    z-index: 2;
+    border: 1px solid #000;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    padding-bottom: 8px;
+  }
+
+  .black-key:hover {
+    background: linear-gradient(to bottom, #3a3a3a, #2a2a2a);
+  }
+
+  .key-dot {
+    width: 12px;
+    height: 12px;
+    background: linear-gradient(135deg, #ff4757 0%, #ff6b81 100%);
+    border-radius: 50%;
+    box-shadow: 0 2px 6px rgba(255, 71, 87, 0.4);
+    opacity: 0;
+    transform: scale(0);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .white-key.active .key-dot,
+  .black-key.active .key-dot {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  .actions {
+    margin-top: auto;
+    padding-bottom: env(safe-area-inset-bottom);
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+  }
+
+
+  .btn {
+    padding: 16px 28px;
+    border-radius: 50px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    letter-spacing: 0.5px;
+  }
+
+  .btn-secondary {
+    background: rgba(255, 255, 255, 0.05);
+    color: #e8e8e8;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .btn-secondary:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.2);
+    transform: translateY(-2px);
+  }
+
+  .toggle-switch {
+    position: relative;
+    width: 50px;
+    height: 28px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 14px;
+    cursor: pointer;
+    transition: all 0.3s;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .toggle-switch.active {
+    background: linear-gradient(135deg, #fff 0%, #d0d0d0 100%);
+  }
+
+  .toggle-switch::after {
+    content: '';
+    position: absolute;
+    width: 22px;
+    height: 22px;
+    background: #fff;
+    border-radius: 50%;
+    top: 2px;
+    left: 2px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  }
+
+  .toggle-switch.active::after {
+    left: 24px;
+    background: #0f0f0f;
+  }
+
+  .note-label {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 11px;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.4);
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+
+  .note-label.show {
+    opacity: 1;
+  }
+
+  .key-note-label {
+    position: absolute;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 11px;
+    font-weight: 600;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+
+  .white-key .key-note-label {
+    color: #666;
+  }
+
+  .black-key .key-note-label {
+    color: #999;
+  }
+
+  .key-note-label.show {
+    opacity: 1;
+  }
+
+  .tuning-input {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #e8e8e8;
+    padding: 8px 12px;
+    border-radius: 8px;
+    font-size: 14px;
+    outline: none;
+    transition: all 0.3s;
+    font-family: inherit;
+    text-align: center;
+    text-transform: uppercase;
+  }
+
+  .tuning-input:focus {
+    border-color: rgba(255, 255, 255, 0.3);
+    background: rgba(255, 255, 255, 0.08);
+  }
+
+  .string-label {
+    font-size: 12px;
+    color: #888;
+    margin-bottom: 4px;
+  }
+</style>
+</head>
+
+<body>
+
+<div class="container">
+  <div class="header">
+    <div class="app">
+    <div class="title">CHORDEX</div>
+    <div class="subtitle">UNIVERSAL CHORD DIAGRAM BUILDER</div>
+    
+    <div class="menu-button" onclick="toggleMenu()">
+      <span></span>
+      <span></span>
+      <span></span>
+    </div>
+    
+    <div class="menu-dropdown" id="menuDropdown">
+      <div class="menu-item" onclick="exportJPG()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+          <polyline points="7 10 12 15 17 10"/>
+          <line x1="12" y1="15" x2="12" y2="3"/>
+        </svg>
+        Export JPG
+      </div>
+      <div class="menu-item" onclick="toggleSettings()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="3"/>
+          <path d="M12 1v6m0 6v6m8.66-13.66L16 10m-8-5L3.34 9.66M23 12h-6m-6 0H1m18.66 8.34L16 15.66M8 20l-4.66-4.66"/>
+        </svg>
+        Settings
+      </div>
+    </div>
+
+    <div class="settings-dropdown" id="settingsDropdown">
+      <div class="settings-header">
+        <div class="settings-title">Settings</div>
+        <button class="close-settings" onclick="toggleSettings()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18"/>
+            <line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+      </div>
+      
+      <div class="setting-item">
+        <div class="setting-info">
+          <div class="setting-label">Instrument Type</div>
+          <div class="setting-description">Select your instrument</div>
+        </div>
+        <select class="setting-select" id="instrumentSelect" onchange="changeInstrument()">
+          <optgroup label="Fretted Strings">
+            <option value="guitar" selected>Guitar</option>
+            <option value="bass">Bass</option>
+            <option value="ukulele">Ukulele</option>
+            <option value="banjo">Banjo</option>
+          </optgroup>
+          <optgroup label="Keyboards">
+            <option value="piano">Piano/Keyboard</option>
+          </optgroup>
+        </select>
+      </div>
+
+      <div class="setting-item">
+        <div class="setting-info">
+          <div class="setting-label">Show Note Names</div>
+          <div class="setting-description">Display notes on the diagram</div>
+        </div>
+        <div class="toggle-switch" id="noteToggle" onclick="toggleNotes()"></div>
+      </div>
+    </div>
+    </div>
+  </div>
+
+  <!-- Fretboard View -->
+  <div class="fretboard-container active" id="fretboardView">
+    <div class="controls">
+      <div class="fret-nav">
+        <button onclick="changeFret(-1)">−</button>
+      <!--  <span class="fret-label" id="fretLabel">Fret 1</span> -->
+        <div class="fret-label" id="fretLabel">Fret 1</div>
+        <button onclick="changeFret(1)">+</button>
+      </div>
+    </div>
+
+    <div class="diagram-wrapper">
+      <div class="fretboard-container active" id="fretExportLabel">
+        Fret 1
+      </div>
+
+      <div class="string-indicators" id="strings"></div>
+      <div class="fretboard" id="fretboard"></div>
+    </div>
+  </div>
+
+  <!-- Keyboard View -->
+  <div class="keyboard-container" id="keyboardView">
+    <div class="controls">
+      <div class="fret-nav">
+        <button onclick="changeOctave(-1)">−</button>
+        <span class="fret-label" id="octaveLabel">Octave 4</span>
+        <button onclick="changeOctave(1)">+</button>
+      </div>
+    </div>
+
+    <div class="diagram-wrapper">
+      <div class="keyboard" id="keyboard"></div>
+    </div>
+  </div>
+
+  <div class="actions">
+    <button class="btn btn-secondary" onclick="clearBoard()">Clear</button>
+  </div>
+</div>
+
+<script>
+  let currentInstrument = 'guitar';
+  let baseFret = 1;
+  let currentOctave = 4;
+  let showNotes = false;
+  let COLS = 6;
+  const ROWS = 6;
+  let barreStart = null;
+  let pressTimer = null;
+
+  const notes = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+  
+  // Standard tunings for each instrument (from low to high string)
+  const tunings = {
+    guitar: ['E', 'A', 'D', 'G', 'B', 'E'],
+    bass: ['E', 'A', 'D', 'G'],
+    ukulele: ['G', 'C', 'E', 'A'],
+    banjo: ['G', 'D', 'G', 'B', 'D']
+  };
+
+  const instruments = {
+    guitar: { type: 'fretboard', strings: 6 },
+    bass: { type: 'fretboard', strings: 4 },
+    ukulele: { type: 'fretboard', strings: 4 },
+    banjo: { type: 'fretboard', strings: 5 },
+    piano: { type: 'keyboard' }
+  };
+
+  function toggleMenu() {
+    document.getElementById('menuDropdown').classList.toggle('active');
+    document.getElementById('settingsDropdown').classList.remove('active');
+    document.getElementById('tuningDropdown').classList.remove('active');
+  }
+
+  function toggleSettings() {
+    document.getElementById('settingsDropdown').classList.toggle('active');
+    document.getElementById('menuDropdown').classList.remove('active');
+    document.getElementById('tuningDropdown').classList.remove('active');
+  }
+
+  function toggleTuning() {
+    document.getElementById('tuningDropdown').classList.toggle('active');
+    document.getElementById('menuDropdown').classList.remove('active');
+    document.getElementById('settingsDropdown').classList.remove('active');
+  }
+
+  function populateTuningOptions() {
+    const select = document.getElementById('tuningSelect');
+    select.innerHTML = '';
+    
+    const presets = presetTunings[currentInstrument];
+    if (presets) {
+      for (const [key, value] of Object.entries(presets)) {
+        const option = document.createElement('option');
+        option.value = key;
+        option.textContent = key.charAt(0).toUpperCase() + key.slice(1).replace('_', ' ');
+        select.appendChild(option);
+      }
+    }
+    
+    const customOption = document.createElement('option');
+    customOption.value = 'custom';
+    customOption.textContent = 'Custom...';
+    select.appendChild(customOption);
+  }
+
+  function changeTuning() {
+    const select = document.getElementById('tuningSelect');
+    const value = select.value;
+    
+    if (value === 'custom') {
+      document.getElementById('customTuningSection').style.display = 'block';
+      buildCustomTuningInputs();
+    } else {
+      document.getElementById('customTuningSection').style.display = 'none';
+      currentTuning = presetTunings[currentInstrument][value];
+      rebuildFretboard();
+    }
+  }
+
+  function buildCustomTuningInputs() {
+    const container = document.getElementById('tuningInputs');
+    container.innerHTML = '';
+    
+    const stringNames = ['Low E', '5th', '4th', '3rd', '2nd', 'High E'];
+    
+    for (let i = 0; i < COLS; i++) {
+      const wrapper = document.createElement('div');
+      
+      const label = document.createElement('div');
+      label.className = 'string-label';
+      label.textContent = `String ${i + 1} (${stringNames[i] || `String ${i + 1}`})`;
+      
+      const input = document.createElement('input');
+      input.type = 'text';
+      input.className = 'tuning-input';
+      input.id = `tuning-${i}`;
+      input.value = currentTuning[i];
+      input.maxLength = 2;
+      input.placeholder = 'E';
+      
+      wrapper.appendChild(label);
+      wrapper.appendChild(input);
+      container.appendChild(wrapper);
+    }
+  }
+
+  function applyCustomTuning() {
+    const customTuning = [];
+    for (let i = 0; i < COLS; i++) {
+      const input = document.getElementById(`tuning-${i}`);
+      const value = input.value.trim().toUpperCase();
+      if (value && notes.includes(value.replace('#', '#'))) {
+        customTuning.push(value);
+      } else {
+        alert(`Invalid note for string ${i + 1}. Please use notes like E, A, D, G, B, E, C#, etc.`);
+        return;
+      }
+    }
+    
+    currentTuning = customTuning;
+    document.getElementById('customTuningSection').style.display = 'none';
+    document.getElementById('tuningDropdown').classList.remove('active');
+    rebuildFretboard();
+  }
+
+  document.addEventListener('click', (e) => {
+    const menuButton = document.querySelector('.menu-button');
+    const menuDropdown = document.getElementById('menuDropdown');
+    const settingsDropdown = document.getElementById('settingsDropdown');
+    const tuningDropdown = document.getElementById('tuningDropdown');
+    
+    if (menuButton && !menuButton.contains(e.target) && 
+        !menuDropdown.contains(e.target) && 
+        !settingsDropdown.contains(e.target) &&
+        !tuningDropdown.contains(e.target)) {
+      menuDropdown.classList.remove('active');
+      settingsDropdown.classList.remove('active');
+      tuningDropdown.classList.remove('active');
+    }
+  });
+
+  function changeInstrument() {
+    const select = document.getElementById('instrumentSelect');
+    currentInstrument = select.value;
+    const instrument = instruments[currentInstrument];
+    
+    // Hide all views
+    document.getElementById('fretboardView').classList.remove('active');
+    document.getElementById('keyboardView').classList.remove('active');
+    
+    // Show appropriate view
+    if (instrument.type === 'fretboard') {
+      document.getElementById('fretboardView').classList.add('active');
+      COLS = instrument.strings;
+      document.getElementById('fretboard').style.gridTemplateColumns = `repeat(${COLS}, 1fr)`;
+      
+      clearBoard();
+      rebuildFretboard();
+      rebuildStringIndicators();
+    } else if (instrument.type === 'keyboard') {
+      document.getElementById('keyboardView').classList.add('active');
+      buildKeyboard();
+    }
+    
+    document.getElementById('settingsDropdown').classList.remove('active');
+  }
+
+  function populateTuningOptions() {
+    const select = document.getElementById('tuningSelect');
+    select.innerHTML = '';
+    
+    const presets = presetTunings[currentInstrument];
+    if (presets) {
+      for (const [key, value] of Object.entries(presets)) {
+        const option = document.createElement('option');
+        option.value = key;
+        option.textContent = key.charAt(0).toUpperCase() + key.slice(1).replace('_', ' ');
+        select.appendChild(option);
+      }
+    }
+    
+    const customOption = document.createElement('option');
+    customOption.value = 'custom';
+    customOption.textContent = 'Custom...';
+    select.appendChild(customOption);
+  }
+
+  function changeTuning() {
+    const select = document.getElementById('tuningSelect');
+    const value = select.value;
+    
+    if (value === 'custom') {
+      document.getElementById('customTuningSection').style.display = 'block';
+      buildCustomTuningInputs();
+    } else {
+      document.getElementById('customTuningSection').style.display = 'none';
+      currentTuning = presetTunings[currentInstrument][value];
+      rebuildFretboard();
+    }
+  }
+
+  function buildCustomTuningInputs() {
+    const container = document.getElementById('tuningInputs');
+    container.innerHTML = '';
+    
+    const stringNames = ['Low E', '5th', '4th', '3rd', '2nd', 'High E'];
+    
+    for (let i = 0; i < COLS; i++) {
+      const wrapper = document.createElement('div');
+      
+      const label = document.createElement('div');
+      label.className = 'string-label';
+      label.textContent = `String ${i + 1} (${stringNames[i] || `String ${i + 1}`})`;
+      
+      const input = document.createElement('input');
+      input.type = 'text';
+      input.className = 'tuning-input';
+      input.id = `tuning-${i}`;
+      input.value = currentTuning[i];
+      input.maxLength = 2;
+      input.placeholder = 'E';
+      
+      wrapper.appendChild(label);
+      wrapper.appendChild(input);
+      container.appendChild(wrapper);
+    }
+  }
+
+  function applyCustomTuning() {
+    const customTuning = [];
+    for (let i = 0; i < COLS; i++) {
+      const input = document.getElementById(`tuning-${i}`);
+      const value = input.value.trim().toUpperCase();
+      if (value && notes.includes(value.replace('#', '#'))) {
+        customTuning.push(value);
+      } else {
+        alert(`Invalid note for string ${i + 1}. Please use notes like E, A, D, G, B, E, C#, etc.`);
+        return;
+      }
+    }
+    
+    currentTuning = customTuning;
+    document.getElementById('customTuningSection').style.display = 'none';
+    document.getElementById('tuningDropdown').classList.remove('active');
+    rebuildFretboard();
+  }
+
+  function getNoteAtFret(openNote, fretNumber) {
+    const noteIndex = notes.indexOf(openNote);
+    return notes[(noteIndex + fretNumber) % 12];
+  }
+
+  function toggleNotes() {
+    showNotes = !showNotes;
+    document.getElementById('noteToggle').classList.toggle('active');
+    
+    // Update fretboard notes
+    document.querySelectorAll('.note-label').forEach(label => {
+      label.classList.toggle('show', showNotes);
+    });
+    
+    // Update keyboard notes
+    document.querySelectorAll('.key-note-label').forEach(label => {
+      label.classList.toggle('show', showNotes);
+    });
+    
+    document.getElementById('settingsDropdown').classList.remove('active');
+  }
+
+  function buildKeyboard() {
+    const keyboard = document.getElementById('keyboard');
+    keyboard.innerHTML = '';
+    
+    const whiteKeys = ['C', 'D', 'E', 'F', 'G', 'A', 'B'];
+    const blackKeyPositions = [1, 2, 4, 5, 6]; // After C, D, F, G, A
+    
+    whiteKeys.forEach((note, index) => {
+      const key = document.createElement('div');
+      key.className = 'white-key';
+      key.dataset.note = `${note}${currentOctave}`;
+      
+      const noteLabel = document.createElement('div');
+      noteLabel.className = 'key-note-label';
+      if (showNotes) noteLabel.classList.add('show');
+      noteLabel.textContent = `${note}${currentOctave}`;
+      key.appendChild(noteLabel);
+      
+      const dot = document.createElement('div');
+      dot.className = 'key-dot';
+      key.appendChild(dot);
+      
+      key.addEventListener('click', () => {
+        key.classList.toggle('active');
+      });
+      keyboard.appendChild(key);
+      
+      // Add black key after certain white keys
+      if (blackKeyPositions.includes(index + 1)) {
+        const blackKey = document.createElement('div');
+        blackKey.className = 'black-key';
+        blackKey.style.left = `${(index + 1) * (100 / 7) - 2}%`;
+        blackKey.dataset.note = `${note}#${currentOctave}`;
+        
+        const blackNoteLabel = document.createElement('div');
+        blackNoteLabel.className = 'key-note-label';
+        if (showNotes) blackNoteLabel.classList.add('show');
+        blackNoteLabel.textContent = `${note}#${currentOctave}`;
+        blackKey.appendChild(blackNoteLabel);
+        
+        const blackDot = document.createElement('div');
+        blackDot.className = 'key-dot';
+        blackKey.appendChild(blackDot);
+        
+        blackKey.addEventListener('click', (e) => {
+          e.stopPropagation();
+          blackKey.classList.toggle('active');
+        });
+        keyboard.appendChild(blackKey);
+      }
+    });
+  }
+
+  function rebuildStringIndicators() {
+    const container = document.getElementById('strings');
+    container.innerHTML = '';
+    container.style.width = '312px';
+    
+    for (let i = 0; i < COLS; i++) {
+      const indicator = document.createElement('div');
+      indicator.className = 'string-indicator open';
+      indicator.dataset.state = 'open';
+      indicator.addEventListener('click', () => {
+        const state = indicator.dataset.state;
+        const newState = state === 'open' ? 'muted' : 'open';
+        indicator.dataset.state = newState;
+        indicator.className = `string-indicator ${newState}`;
+      });
+      container.appendChild(indicator);
+    }
+  }
+
+  function rebuildFretboard() {
+    const fretboard = document.getElementById('fretboard');
+    fretboard.innerHTML = '';
+    const tuning = tunings[currentInstrument] || tunings.guitar;
+    
+    for (let i = 0; i < COLS * ROWS; i++) {
+      const cell = document.createElement('div');
+      cell.className = 'cell';
+      cell.dataset.index = i;
+
+      if ((i + 1) % COLS === 0) {
+        cell.style.borderRight = 'none';
+      }
+
+      // Add note label
+      const stringIndex = i % COLS;
+      const fretIndex = Math.floor(i / COLS);
+      const openNote = tuning[stringIndex];
+      const noteAtPosition = getNoteAtFret(openNote, baseFret + fretIndex);
+      
+      const noteLabel = document.createElement('div');
+      noteLabel.className = 'note-label';
+      if (showNotes) noteLabel.classList.add('show');
+      noteLabel.textContent = noteAtPosition;
+      cell.appendChild(noteLabel);
+
+      cell.addEventListener('pointerdown', () => {
+        pressTimer = setTimeout(() => {
+          if (barreStart === null) {
+            barreStart = i;
+            cell.classList.add('selected');
+          }
+        }, 500);
+      });
+
+      cell.addEventListener('pointerup', () => clearTimeout(pressTimer));
+      cell.addEventListener('pointerleave', () => clearTimeout(pressTimer));
+
+      cell.addEventListener('click', () => {
+        const index = Number(cell.dataset.index);
+
+        if (barreStart !== null) {
+          const startRow = Math.floor(barreStart / COLS);
+          const endRow = Math.floor(index / COLS);
+
+          if (startRow === endRow && barreStart !== index) {
+            const startCol = barreStart % COLS;
+            const endCol = index % COLS;
+            const min = Math.min(startCol, endCol);
+            const max = Math.max(startCol, endCol);
+
+            const cellWidth = fretboard.offsetWidth / COLS;
+            const cellHeight = fretboard.offsetHeight / ROWS;
+
+            const bar = document.createElement('div');
+            bar.className = 'bar';
+            bar.style.left = `${min * cellWidth + 8}px`;
+            bar.style.width = `${(max - min + 1) * cellWidth - 16}px`;
+            bar.style.top = `${startRow * cellHeight + cellHeight / 2 - 8}px`;
+
+            bar.addEventListener('click', e => {
+              e.stopPropagation();
+              bar.remove();
+            });
+
+            fretboard.appendChild(bar);
+          }
+
+          resetBarreSelection();
+          return;
+        }
+
+        // Toggle finger - check if finger already exists
+        const existingFinger = cell.querySelector('.finger');
+        if (existingFinger) {
+          existingFinger.remove();
+        } else {
+          const finger = document.createElement('div');
+          finger.className = 'finger';
+          cell.appendChild(finger);
+        }
+      });
+
+      fretboard.appendChild(cell);
+    }
+  }
+
+  function resetBarreSelection() {
+    document.querySelectorAll('.cell.selected').forEach(c =>
+      c.classList.remove('selected')
+    );
+    barreStart = null;
+  }
+
+  function changeFret(delta) {
+    baseFret = Math.max(1, baseFret + delta);
+    document.getElementById('fretLabel').textContent = `Fret ${baseFret}`;
+    document.getElementById('fretExportLabel').textContent = `Fret ${baseFret}`;
+    rebuildFretboard();
+  }
+
+  function changeOctave(delta) {
+    currentOctave = Math.max(1, Math.min(8, currentOctave + delta));
+    document.getElementById('octaveLabel').textContent = `Octave ${currentOctave}`;
+    buildKeyboard();
+  }
+
+  function clearBoard() {
+    // Clear fretboard
+    document.querySelectorAll('.finger').forEach(f => f.remove());
+    document.querySelectorAll('.bar').forEach(b => b.remove());
+    resetBarreSelection();
+    baseFret = 1;
+    document.getElementById('fretLabel').textContent = 'Fret 1';
+    document.querySelectorAll('.string-indicator').forEach(s => {
+      s.dataset.state = 'open';
+      s.className = 'string-indicator open';
+    });
+    
+    // Clear keyboard
+    document.querySelectorAll('.white-key, .black-key').forEach(k => {
+      k.classList.remove('active');
+    });
+  }
+
+  function exportJPG() {
+    const activeView = currentInstrument === 'piano' ? 
+      document.getElementById('keyboardView') : 
+      document.querySelector('.diagram-wrapper');
+      
+    html2canvas(activeView, {
+      backgroundColor: 'rgba(0, 0, 0, 0.3)',
+      scale: 2
+    }).then(canvas => {
+      const timestamp = new Date().toISOString().slice(0,19).replace(/:/g,'-');
+      const link = document.createElement('a');
+      link.download = `${currentInstrument}-diagram-${timestamp}.jpg`;
+      link.href = canvas.toDataURL('image/jpeg');
+      link.click();
+    });
+  }
+
+  // Initialize
+  rebuildFretboard();
+  rebuildStringIndicators();
+  document.getElementById('fretLabel').textContent = 'Fret 1';
+  document.getElementById('fretExportLabel').textContent = 'Fret 1';
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+
+</body>
+</html>
