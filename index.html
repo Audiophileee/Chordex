@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
+  <head>
 <meta name="theme-color" content="#0f0f0f">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -169,21 +169,21 @@
   }
 
   .settings-dropdown {
-    position: absolute;
-    right: 0;
-    top: 120px;
+    position: fixed;
+    right: 12px;
+    top: calc(env(safe-area-inset-top) + 64px);
     background: rgba(20, 20, 20, 0.95);
     backdrop-filter: blur(20px);
     border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 20px;
-    padding: 24px;
-    width: 100%;
-    max-width: 500px;
+    border-radius: 16px;
+    padding: 16px;
+    width: calc(100% - 48px);
+    max-width: 350px;
     opacity: 0;
     visibility: hidden;
     transform: translateY(-10px);
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    z-index: 99;
+    z-index: 998;
     box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
     max-height: 0;
     overflow: hidden;
@@ -193,7 +193,7 @@
     opacity: 1;
     visibility: visible;
     transform: translateY(0);
-    max-height: 600px;
+    max-height: 500px;
     overflow-y: auto;
   }
 
@@ -434,6 +434,7 @@
     border: 1px solid rgba(255, 255, 255, 0.05);
 
     margin: 0 auto;
+    position: relative; /* ensure absolutely positioned bars are placed relative to this container */
   }
 
   .cell {
@@ -484,66 +485,83 @@
 
   .keyboard {
     width: 100%;
-    max-width: 360px;
+    max-width: 100%;
     height: 180px;
+    overflow: hidden;
 
     background: rgba(0, 0, 0, 0.3);
     border-radius: 20px;
-    padding: 14px;
+    padding: 12px;
 
     display: flex;
-    gap: 2px;
+    gap: 0;
+    position: relative;
+    align-items: flex-start;
+    flex-wrap: nowrap;
   }
 
-
   .white-key {
-    flex: 1;
-    height: 160px;
-    background: linear-gradient(to bottom, #f0f0f0, #e0e0e0);
-    border-radius: 0 0 8px 8px;
+    flex-shrink: 0;
+    width: 36px;
+    height: 140px;
+    background: linear-gradient(to bottom, #f5f5f5, #e8e8e8);
+    border: 1px solid #999;
+    border-radius: 0 0 4px 4px;
     cursor: pointer;
     transition: all 0.2s;
     position: relative;
-    border: 1px solid #ccc;
     display: flex;
     align-items: flex-end;
     justify-content: center;
-    padding-bottom: 12px;
+    padding-bottom: 6px;
+  }
+
+  .white-key:first-child {
+    border-radius: 4px 0 4px 4px;
   }
 
   .white-key:hover {
-    background: linear-gradient(to bottom, #fff, #f0f0f0);
+    background: linear-gradient(to bottom, #fff, #f5f5f5);
   }
 
   .black-key {
-    width: 30px;
-    height: 100px;
-    background: linear-gradient(to bottom, #2a2a2a, #1a1a1a);
-    border-radius: 0 0 6px 6px;
+    width: 24px;
+    height: 85px;
+    background: linear-gradient(to bottom, #1a1a1a, #0a0a0a);
+    border-radius: 0 0 3px 3px;
+    border: 1px solid #000;
     cursor: pointer;
     transition: all 0.2s;
     position: absolute;
-    z-index: 2;
-    border: 1px solid #000;
+    z-index: 10;
     display: flex;
     align-items: flex-end;
     justify-content: center;
-    padding-bottom: 8px;
+    padding-bottom: 4px;
+    top: 12px;
   }
 
   .black-key:hover {
-    background: linear-gradient(to bottom, #3a3a3a, #2a2a2a);
+    background: linear-gradient(to bottom, #2a2a2a, #1a1a1a);
   }
 
   .key-dot {
     width: 12px;
     height: 12px;
-    background: linear-gradient(135deg, #ff4757 0%, #ff6b81 100%);
     border-radius: 50%;
-    box-shadow: 0 2px 6px rgba(255, 71, 87, 0.4);
     opacity: 0;
     transform: scale(0);
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .white-key .key-dot {
+    background: linear-gradient(135deg, #1a1a1a 0%, #0a0a0a 100%);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+  }
+
+  .black-key .key-dot {
+    background: linear-gradient(135deg, #fff 0%, #e0e0e0 100%);
+    box-shadow: 0 2px 6px rgba(255, 255, 255, 0.3);
   }
 
   .white-key.active .key-dot,
@@ -1072,10 +1090,11 @@
     const keyboard = document.getElementById('keyboard');
     keyboard.innerHTML = '';
     
-    const whiteKeys = ['C', 'D', 'E', 'F', 'G', 'A', 'B'];
-    const blackKeyPositions = [1, 2, 4, 5, 6]; // After C, D, F, G, A
+    const whiteNotes = ['C', 'D', 'E', 'F', 'G', 'A', 'B'];
+    const blackNotes = ['C#', 'D#', 'F#', 'G#', 'A#'];
     
-    whiteKeys.forEach((note, index) => {
+    // Generate 1 octave only (7 white keys)
+    whiteNotes.forEach((note, noteIndex) => {
       const key = document.createElement('div');
       key.className = 'white-key';
       key.dataset.note = `${note}${currentOctave}`;
@@ -1095,22 +1114,29 @@
       });
       keyboard.appendChild(key);
       
-      // Add black key after certain white keys
-      if (blackKeyPositions.includes(index + 1)) {
+      // Add black key if it exists after this white key
+      const sharpNote = `${note}#`;
+      
+      if (blackNotes.includes(sharpNote)) {
         const blackKey = document.createElement('div');
         blackKey.className = 'black-key';
-        blackKey.style.left = `${(index + 1) * (100 / 7) - 2}%`;
-        blackKey.dataset.note = `${note}#${currentOctave}`;
+        blackKey.dataset.note = `${sharpNote}${currentOctave}`;
         
         const blackNoteLabel = document.createElement('div');
         blackNoteLabel.className = 'key-note-label';
         if (showNotes) blackNoteLabel.classList.add('show');
-        blackNoteLabel.textContent = `${note}#${currentOctave}`;
+        blackNoteLabel.textContent = `${sharpNote}${currentOctave}`;
         blackKey.appendChild(blackNoteLabel);
         
         const blackDot = document.createElement('div');
         blackDot.className = 'key-dot';
         blackKey.appendChild(blackDot);
+        
+        // Position black key between white keys
+        const keyLeft = key.offsetLeft;
+        const keyWidth = key.offsetWidth;
+        const leftPx = keyLeft + keyWidth - 12; // center over the gap
+        blackKey.style.left = `${leftPx}px`;
         
         blackKey.addEventListener('click', (e) => {
           e.stopPropagation();
@@ -1191,14 +1217,33 @@
             const min = Math.min(startCol, endCol);
             const max = Math.max(startCol, endCol);
 
-            const cellWidth = fretboard.offsetWidth / COLS;
-            const cellHeight = fretboard.offsetHeight / ROWS;
+            // calculate positions based on the actual cell elements rather than assuming equal sizes
+            const startCell = fretboard.querySelector(`.cell[data-index='${barreStart}']`);
+            const endCell = fretboard.querySelector(`.cell[data-index='${index}']`);
+            const minCell = startCell.offsetLeft < endCell.offsetLeft ? startCell : endCell;
+            const maxCell = startCell.offsetLeft < endCell.offsetLeft ? endCell : startCell;
+
+            // remove any finger markers in the same row because the barre covers them
+            const rowIdx = startRow; // guaranteed equal to endRow
+            fretboard.querySelectorAll('.cell').forEach(c => {
+              if (Math.floor(Number(c.dataset.index) / COLS) === rowIdx) {
+                const f = c.querySelector('.finger');
+                if (f) f.remove();
+              }
+            });
 
             const bar = document.createElement('div');
             bar.className = 'bar';
-            bar.style.left = `${min * cellWidth + 8}px`;
-            bar.style.width = `${(max - min + 1) * cellWidth - 16}px`;
-            bar.style.top = `${startRow * cellHeight + cellHeight / 2 - 8}px`;
+
+            // left offset relative to fretboard (add same 8px padding used previously)
+            const left = minCell.offsetLeft + 8;
+            // width spans from the left edge of minCell to the right edge of maxCell, minus 16px padding
+            const width = (maxCell.offsetLeft - minCell.offsetLeft) + maxCell.offsetWidth - 16;
+            const top = minCell.offsetTop + minCell.offsetHeight / 2 - 8; // center the 16px-high bar
+
+            bar.style.left = `${left}px`;
+            bar.style.width = `${width}px`;
+            bar.style.top = `${top}px`;
 
             bar.addEventListener('click', e => {
               e.stopPropagation();
