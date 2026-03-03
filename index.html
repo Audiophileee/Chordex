@@ -261,20 +261,32 @@
 
   .setting-select {
     background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.15);
     color: #e8e8e8;
-    padding: 10px 16px;
+    padding: 12px 14px;
     border-radius: 12px;
     font-size: 14px;
     cursor: pointer;
     outline: none;
     transition: all 0.3s;
     font-family: inherit;
+    backdrop-filter: blur(10px);
   }
 
   .setting-select:hover {
     background: rgba(255, 255, 255, 0.08);
-    border-color: rgba(255, 255, 255, 0.2);
+    border-color: rgba(255, 255, 255, 0.25);
+  }
+
+  .setting-select:focus {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.3);
+    box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.05);
+  }
+
+  .setting-select option {
+    background: #1a1a1a;
+    color: #e8e8e8;
   }
 
   .diagram-wrapper {
@@ -745,22 +757,18 @@
           </svg>
         </button>
       </div>
-      
+
       <div class="setting-item">
         <div class="setting-info">
           <div class="setting-label">Instrument Type</div>
           <div class="setting-description">Select your instrument</div>
         </div>
         <select class="setting-select" id="instrumentSelect" onchange="changeInstrument()">
-          <optgroup label="Fretted Strings">
-            <option value="guitar" selected>Guitar</option>
-            <option value="bass">Bass</option>
-            <option value="ukulele">Ukulele</option>
-            <option value="banjo">Banjo</option>
-          </optgroup>
-          <optgroup label="Keyboards">
-            <option value="piano">Piano/Keyboard</option>
-          </optgroup>
+          <option value="guitar" selected>Guitar</option>
+          <option value="bass">Bass</option>
+          <option value="ukulele">Ukulele</option>
+          <option value="banjo">Banjo</option>
+          <option value="piano">Piano</option>
         </select>
       </div>
 
@@ -801,7 +809,7 @@
     <div class="controls">
       <div class="fret-nav">
         <button onclick="changeOctave(-1)">−</button>
-        <span class="fret-label" id="octaveLabel">Octave 4</span>
+        <span class="fret-label" id="octaveLabel">Octave 1</span>
         <button onclick="changeOctave(1)">+</button>
       </div>
     </div>
@@ -819,7 +827,7 @@
 <script>
   let currentInstrument = 'guitar';
   let baseFret = 1;
-  let currentOctave = 4;
+  let currentOctave = 1;
   let showNotes = false;
   let COLS = 6;
   const ROWS = 6;
@@ -1319,6 +1327,7 @@
       backgroundColor: 'rgba(0, 0, 0, 0.3)',
       scale: 2
     }).then(canvas => {
+      <html/>
       const timestamp = new Date().toISOString().slice(0,19).replace(/:/g,'-');
       const link = document.createElement('a');
       link.download = `${currentInstrument}-diagram-${timestamp}.jpg`;
@@ -1337,4 +1346,3 @@
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 
 </body>
-</html>
